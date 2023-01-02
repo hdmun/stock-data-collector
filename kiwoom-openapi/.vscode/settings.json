@@ -1,0 +1,8 @@
+{
+    "editor.tabSize": 4,
+    "editor.rulers": [80, 120],
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+    },
+}
