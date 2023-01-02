@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*-coding: utf-8 -*-
 
+from enum import Enum
 from PyQt5.QAxContainer import QAxWidget
 
 
@@ -9,6 +10,18 @@ ON_RECEIVE_MSG_SIGNAL = 'OnReceiveMsg(QString, QString, QString, QString)'
 ON_RECEIVE_TR_DATA_SIGNAL = 'OnReceiveTrData(QString, QString, QString, ' \
                             'QString, QString, int, QString, QString, QString)'
 ON_RECEIVE_REAL_DATA_SIGNAL = 'OnReceiveRealData(QString, QString, QString)'
+
+
+class Market(Enum):
+    KOSPI = 0
+    ELW = 3
+    # = 4 # 뮤추얼펀드
+    # = 5 # 신주인수권
+    # = 6 # 리츠
+    ETF = 8
+    # = 9 # 하이일드펀드
+    KOSDAQ = 10
+    OUTSIDE = 30
 
 
 class KiwoomOpenAPI(QAxWidget):
@@ -69,3 +82,28 @@ class KiwoomOpenAPI(QAxWidget):
         자동로그인 설정인 경우 로그인창에서 자동으로 로그인을 시도합니다.
         """
         self.CommConnect()
+
+    def get_code_list(self, market: Market) -> list[str]:
+        """시장구분에 따른 종목코드를 반환.
+
+        Args:
+          market: 시장 구분 값
+
+        Return:
+            종목코드 리스트.
+        """
+        ret: str = self.GetCodeListByMarket(f'{market.value}')
+        code_list = ret.split(';')
+        if code_list[-1] == '':
+            return code_list[:-1]
+        return code_list[:]
+
+    def get_master_code_name(self, code: str) -> str:
+        """종목코드의 한글명을 반환.
+
+        Args:
+            code: 종목코드
+        Return:
+            종목 한글명
+        """
+        return self.GetMasterCodeName(code)
