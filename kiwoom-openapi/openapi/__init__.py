@@ -58,11 +58,11 @@ class KiwoomOpenAPI(QAxWidget):
 
     @property
     def is_real_server(self) -> bool:
+        """실제 서버로 접속 했는지 확인."""
+
         ret: str = self.dynamicCall(
-            'KOA_Functions(QString, QString)',
-            'GetServerGubun', ''
-        )
-        return ret != '1'
+            'KOA_Functions(QString, QString)', 'GetServerGubun', '')
+        return ret != '1'  # '1'은 모의투자 서버
 
     def connect(self):
         """수동 로그인설정인 경우 로그인창을 출력.
