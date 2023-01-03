@@ -1,9 +1,11 @@
 import unittest
+from datetime import datetime, timedelta
 
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtWidgets import QApplication
 
 from openapi import KiwoomOpenAPI, Market
+from openapi.request.opt10059 import Opt10059, Opt10059Response
 from openapi.request.opt10079 import Opt10079, Opt10079Response
 
 
@@ -56,29 +58,22 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotEqual('', name)
                 self.assertIsInstance(name, str)
 
+    @unittest.skip('연속으로 요청하지 않게 처리할 때 까지 스킵')
     async def test_request_tick(self):
-        def _on_receive_tr_data(
-            screen_no: str,
-            req_name: str,
-            tran_code: str,
-            record_name: str,
-            prev_next: str,
-            _1: int, _2: str, _3: str, _4: str  # deprecated
+        def _on_receive_tr_data(screen_no: str, req_name: str, tran_code: str,
+                                record_name: str, prev_next: str,
+                                _1: int, _2: str, _3: str, _4: str  # deprecated
         ):
-            if not req_name == request_opt.req_name:
-                request_opt._exit()
-                raise ValueError(f'invalid request name. '
-                                 f'request: {request_opt.req_name}, '
-                                 f'receive: {req_name}')
-            if not tran_code == request_opt.tran_code:
-                request_opt._exit()
-                raise ValueError(f'invalid request tran_code'
-                                 f'request: {request_opt.req_name}, '
-                                 f'receive: {req_name}')
+            try:
+                self.assertEqual(req_name, request_opt.req_name)
+                self.assertEqual(tran_code, request_opt.tran_code)
 
-            request_opt._set_continue_next(prev_next)
-            request_opt.on_receive_tr_data()
-            request_opt._exit()
+                request_opt._set_continue_next(prev_next)
+                request_opt.on_receive_tr_data()
+            except Exception as ex:
+                raise ex
+            finally:
+                request_opt._exit()
 
         # given
         code = '005930'
@@ -93,5 +88,37 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
         # then
         self.assertEqual(code, response.code)
         self.assertGreater(len(response.tick_data), 0)
+
+        self.openapi.reset_trade_data_handler()
+
+    @unittest.skip('연속으로 요청하지 않게 처리할 때 까지 스킵')
+    async def test_request_investor(self):
+        def _on_receive_tr_data(screen_no: str, req_name: str, tran_code: str,
+                                record_name: str, prev_next: str,
+                                _1: int, _2: str, _3: str, _4: str  # deprecated
+        ):
+            try:
+                self.assertEqual(req_name, request_opt.req_name)
+                self.assertEqual(tran_code, request_opt.tran_code)
+
+                request_opt._set_continue_next(prev_next)
+                request_opt.on_receive_tr_data()
+            except Exception as ex:
+                raise ex
+            finally:
+                request_opt._exit()
+
+        # given
+        code = '005930'
+        last_dt = datetime.now() + timedelta(days=-7)
+        self.openapi.set_trade_data_handler(_on_receive_tr_data)
+
+        # when
+        request_opt = Opt10059(self.qtapp, self.openapi)
+        response: Opt10059Response = await request_opt.request(code, last_dt)
+
+        # then
+        self.assertEqual(code, response.code)
+        self.assertGreater(len(response.data), 0)
 
         self.openapi.reset_trade_data_handler()
