@@ -11,8 +11,9 @@ ERROR_CONNECT_SERVER = -101 # 서버접속 실패
 ERROR_CONNECT_VERSION = -102 # 버전처리 실패
 
 
-class RequestManager(object):
+class KiwoomOpenAPIClient(object):
     """'KiwoomOpenAPI' 클래스를 사용해 요청을 담당하는 클래스"""
+
     def __init__(self, api: KiwoomOpenAPI):
         self._api: KiwoomOpenAPI = api
         self._login_event_loop: QEventLoop = None

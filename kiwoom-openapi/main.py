@@ -5,11 +5,11 @@ import asyncio
 from PyQt5.QtWidgets import QApplication
 
 from openapi import KiwoomOpenAPI
-from openapi.manager import RequestManager
+from openapi.client import KiwoomOpenAPIClient
 
 
 async def main():
-    req_manager = RequestManager(api=KiwoomOpenAPI())
+    req_manager = KiwoomOpenAPIClient(api=KiwoomOpenAPI())
     await req_manager.connect()
 
 
