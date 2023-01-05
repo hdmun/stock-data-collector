@@ -24,7 +24,7 @@ class Market(IntEnum):
     OUTSIDE = 30
 
 
-class TrResponseError(IntEnum):
+class ResponseError(IntEnum):
     NONE = 0  # 정상처리
     SISE_OVERFLOW = -200  # 시세조회 과부화
     RQ_STRUCT_FAIL = -201  # 입력 구조체 생성 실패
@@ -133,7 +133,7 @@ class KiwoomOpenAPI(QAxWidget):
         req_name: str,
         tran_code: str,
         prev_next: int,
-        screen_no: str) -> TrResponseError:
+        screen_no: str) -> ResponseError:
         """Tran을 서버로 요청.
 
         Args:

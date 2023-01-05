@@ -3,7 +3,7 @@
 
 from PyQt5.QtCore import QEventLoop
 
-from openapi import KiwoomOpenAPI
+from openapi import KiwoomOpenAPI, ResponseError
 
 
 ERROR_CONNECT_USER = -100 # 사용자 정보교환 실패
@@ -17,9 +17,13 @@ class KiwoomOpenAPIClient(object):
     def __init__(self, api: KiwoomOpenAPI):
         self._api: KiwoomOpenAPI = api
         self._login_event_loop: QEventLoop = None
-        self._error_code = 0
+        self._error_code: ResponseError = ResponseError.NONE
 
-    async def connect(self) -> int:
+    @property
+    def connected(self) -> bool:
+        return self._api.connected
+
+    def connect(self) -> ResponseError:
         if not self._api:
             raise Exception('invalid KiwoomOpenAPI')
 

@@ -7,7 +7,7 @@ from enum import StrEnum
 
 from PyQt5.QtWidgets import QApplication
 
-from openapi import KiwoomOpenAPI, TrResponseError
+from openapi import KiwoomOpenAPI, ResponseError
 
 
 REQ_SLEEP = 3.7
@@ -49,10 +49,10 @@ class TransactionRequest(object):
     async def _request_data(self, prev_next: int, screen_no: str):
         error = self._api.request_data(
             self.req_name, self.tran_code, prev_next, screen_no)
-        if error != TrResponseError.NONE:
+        if error != ResponseError.NONE:
             print(f'error in api.request_data. error: {error}')
 
-            while error == TrResponseError.SISE_OVERFLOW:
+            while error == ResponseError.SISE_OVERFLOW:
                 await asyncio.sleep(self._wait_time * 1.5)
 
                 error = self._api.request_data(
