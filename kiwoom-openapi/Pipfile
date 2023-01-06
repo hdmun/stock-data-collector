@@ -4,8 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pyqt5 = {version = "5.15.7", sys_platform = "== 'win32'"}
-pyzmq = "24.0.1"
+pyqt5 = {version = "==5.15.7", sys_platform = "== 'win32'"}
+pyzmq = "==24.0.1"
+tornado = "==6.1"
 
 [dev-packages]
 

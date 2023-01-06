@@ -74,7 +74,7 @@ class KiwoomOpenAPI(QAxWidget):
             True - 연결 완료
             False - 미연결
         """
-        return self.dynamicCall('GetConnectState()') == 0
+        return self.dynamicCall('GetConnectState()') == 1
 
     @property
     def is_real_server(self) -> bool:

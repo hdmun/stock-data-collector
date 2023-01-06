@@ -12,11 +12,11 @@ from service.echo_serivce import EchoService
 
 async def main():
     zmqctx = zmq.asyncio.Context()
-    echo_service = EchoService(zmqctx, port=7070)
+    openapi_client = KiwoomOpenAPIClient(api=KiwoomOpenAPI())
+    echo_service = EchoService(
+        zmqctx, port=7070, openapi_client=openapi_client)
 
-    req_manager = KiwoomOpenAPIClient(api=KiwoomOpenAPI())
-    await req_manager.connect()
-
+    await echo_service.recv_message()
 
 if __name__ == '__main__':
     qtapp = QApplication([])
