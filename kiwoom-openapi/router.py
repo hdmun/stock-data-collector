@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # -*-coding: utf-8 -*-
 
+from protocol.request import RequestMessage
+
+
 class Router(object):
     def __init__(self):
         self._handler = dict[str, callable]()
@@ -14,8 +17,8 @@ class Router(object):
             return func
         return decorator
 
-    async def process(self, path: str, self_, args):
-        if path not in self._handler:
-            raise ValueError(f"invalid path '{path}'")
+    async def process(self, instance: object, message: RequestMessage):
+        if message.path not in self._handler:
+            raise ValueError(f"invalid path '{message.path}'")
 
-        await self._handler[path](self_, args)
+        await self._handler[message.path](instance, message)

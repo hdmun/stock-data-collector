@@ -1,5 +1,6 @@
 import unittest
 
+from protocol.request import RequestMessage
 from router import Router
 
 
@@ -29,4 +30,4 @@ class RouterTests(unittest.IsolatedAsyncioTestCase):
 
         # when, then
         with self.assertRaises(ValueError):
-            await router.process('/path', None, None)
+            await router.process(None, RequestMessage(path='/path'))
