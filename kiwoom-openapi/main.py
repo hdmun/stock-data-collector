@@ -12,7 +12,7 @@ from service.echo_serivce import EchoService
 
 async def main():
     zmqctx = zmq.asyncio.Context()
-    openapi_client = KiwoomOpenAPIClient(api=KiwoomOpenAPI())
+    openapi_client = KiwoomOpenAPIClient()
     echo_service = EchoService(
         zmqctx, port=7070, openapi_client=openapi_client)
 

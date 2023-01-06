@@ -5,9 +5,10 @@ import asyncio
 
 import zmq
 import zmq.asyncio
+from PyQt5.QtWidgets import QApplication
 
 import protocol
-from openapi import ResponseError
+from openapi import KiwoomOpenAPI, ResponseError
 from openapi.client import KiwoomOpenAPIClient
 from router import Router
 
@@ -50,12 +51,22 @@ class EchoService(object):
             return
 
         # check connect timeout?
-        error_code = self._openapi_client.connect()
+        error_code = self._openapi_client.connect(api=KiwoomOpenAPI())
         if error_code != ResponseError.NONE:
             self.reply(error_code=1, message='failed to connect')
             return
 
         self.reply(error_code=0, message='connect openapi')
+
+    @echo.route('/disconnect')
+    async def on_disconnect_openapi(self, _: protocol.RequestMessage):
+        if not self._openapi_client.connected:
+            self.reply(error_code=0, message='already disconnected')
+            return
+
+        # check connect timeout?
+        self._openapi_client.disconnect()
+        self.reply(error_code=0, message='disconnect openapi')
 
     @echo.route('/get/stocks')
     async def on_get_stocks(self, _: protocol.RequestMessage):

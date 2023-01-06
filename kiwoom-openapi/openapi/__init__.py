@@ -74,6 +74,8 @@ class KiwoomOpenAPI(QAxWidget):
             True - 연결 완료
             False - 미연결
         """
+        if self.isNull():
+            return False
         return self.dynamicCall('GetConnectState()') == 1
 
     @property

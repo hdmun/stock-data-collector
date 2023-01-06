@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*-coding: utf-8 -*-
 
+import asyncio
 from PyQt5.QtCore import QEventLoop
 from model import StockItem
 
@@ -15,19 +16,20 @@ ERROR_CONNECT_VERSION = -102 # 버전처리 실패
 class KiwoomOpenAPIClient(object):
     """'KiwoomOpenAPI' 클래스를 사용해 요청을 담당하는 클래스"""
 
-    def __init__(self, api: KiwoomOpenAPI):
-        self._api: KiwoomOpenAPI = api
+    def __init__(self):
+        self._api: KiwoomOpenAPI = None
         self._login_event_loop: QEventLoop = None
         self._error_code: ResponseError = ResponseError.NONE
 
     @property
     def connected(self) -> bool:
-        return self._api.connected
+        return self._api.connected if self._api else False
 
-    def connect(self) -> ResponseError:
-        if not self._api:
-            raise Exception('invalid KiwoomOpenAPI')
+    def connect(self, api: KiwoomOpenAPI) -> ResponseError:
+        if self._api and self._api.connected:
+            raise Exception('duplicate connect KiwoomOpenAPI')
 
+        self._api = api
         self._api.set_connect_handler(self._on_connect_event)
         print('initialize KiwoomOpenAPI')
 
@@ -35,6 +37,13 @@ class KiwoomOpenAPIClient(object):
         self._login_event_loop = QEventLoop()
         self._login_event_loop.exec_()
         return self._error_code
+
+    def disconnect(self):
+        if not self._api:
+            return
+
+        self._api.clear()
+        print('disconnect KiwoomOpenAPI')
 
     def _on_connect_event(self, error_code: int):
         if error_code == 0:
