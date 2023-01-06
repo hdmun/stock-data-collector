@@ -105,6 +105,18 @@ class KiwoomOpenAPI(QAxWidget):
             return code_list[:-1]
         return code_list[:]
 
+    def get_future_code_list(self) -> list[str]:
+        """지수선물 코드 리스트를 반환.
+
+        Return:
+            종목코드 리스트
+        """
+        ret: str = self.GetFutureList()
+        code_list = ret.split(';')
+        if code_list[-1] == '':
+            return code_list[:-1]
+        return code_list[:]
+
     def get_master_code_name(self, code: str) -> str:
         """종목코드의 한글명을 반환.
 

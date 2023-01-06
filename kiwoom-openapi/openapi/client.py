@@ -2,8 +2,9 @@
 # -*-coding: utf-8 -*-
 
 from PyQt5.QtCore import QEventLoop
+from model import StockItem
 
-from openapi import KiwoomOpenAPI, ResponseError
+from openapi import KiwoomOpenAPI, Market, ResponseError
 
 
 ERROR_CONNECT_USER = -100 # 사용자 정보교환 실패
@@ -43,3 +44,21 @@ class KiwoomOpenAPIClient(object):
 
         self._error_code = error_code
         self._login_event_loop.exit()
+
+    def get_stock_items_by_kospi(self) -> list[StockItem]:
+        return list(map(
+            lambda code: StockItem(code, self._api.get_master_code_name(code)),
+            self._api.get_code_list(Market.KOSPI)
+        ))
+
+    def get_stock_items_by_kosdaq(self) -> list[StockItem]:
+        return list(map(
+            lambda code: StockItem(code, self._api.get_master_code_name(code)),
+            self._api.get_code_list(Market.KOSDAQ)
+        ))
+
+    def get_stock_items_by_futures(self) -> list[StockItem]:
+        return list(map(
+            lambda code: StockItem(code, self._api.get_master_code_name(code)),
+            self._api.get_future_code_list()
+        ))
