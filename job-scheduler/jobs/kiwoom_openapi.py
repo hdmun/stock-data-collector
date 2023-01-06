@@ -3,6 +3,10 @@
 
 import zmq.asyncio
 
+import protocol
+from protocol.request import RequestMessage
+from protocol.response import ResponseMessage
+
 
 class KiwoomOpenAPIJob(object):
     """kiwoom openapi의 작업을 컨트롤하는 역할 담당
@@ -15,3 +19,14 @@ class KiwoomOpenAPIJob(object):
 
     def connect(self, host: str, port: int):
         self._req_sock.connect(f'{host}:{port}')
+
+    async def request(self, path: str):
+        self._req_sock.send_pyobj(RequestMessage(path=path))
+        return await self._req_sock.recv_pyobj()
+
+    async def request_message(self, message: RequestMessage):
+        self._req_sock.send_pyobj(message)
+        return await self._req_sock.recv_pyobj()
+
+    async def run(self):
+        connect_response: ResponseMessage = await self.request('/connect')

@@ -29,8 +29,7 @@ async def main():
 
     host, port = job_config.kiwoom_addr
     job.connect(host, port)
-
-    # todo: schedule logic
+    await job.run()
 
 
 if __name__ == '__main__':
