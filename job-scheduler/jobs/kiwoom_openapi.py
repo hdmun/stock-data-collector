@@ -3,7 +3,6 @@
 
 import zmq.asyncio
 
-import protocol
 from protocol.request import RequestMessage
 from protocol.response import ResponseMessage
 
