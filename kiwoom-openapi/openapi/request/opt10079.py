@@ -36,7 +36,7 @@ class Opt10079(TransactionRequest):
         self._tick_data = list[TickData]()
 
     async def request(self, code: str, last_dt: datetime=None,
-                      adj_stock_price=0) -> Opt10079Response:
+                      adj_stock_price=0, multiple=True) -> Opt10079Response:
         """틱 데이터를 조회합니다.
 
         데이터 건수를 지정할 수 없고, 데이터 유무에따라 한번에 최대 900개가 조회됩니다.
@@ -63,7 +63,7 @@ class Opt10079(TransactionRequest):
         __set_request_params()
         await self._request_data(0, '0101')
 
-        while self._continue_next:
+        while multiple and self._continue_next:
             __set_request_params()
             await self._request_data(2, '0101')
 

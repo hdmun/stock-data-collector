@@ -58,7 +58,6 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotEqual('', name)
                 self.assertIsInstance(name, str)
 
-    @unittest.skip('연속으로 요청하지 않게 처리할 때 까지 스킵')
     async def test_request_tick(self):
         def _on_receive_tr_data(screen_no: str, req_name: str, tran_code: str,
                                 record_name: str, prev_next: str,
@@ -79,15 +78,17 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
         code = '005930'
         last_dt = None
         adj_stock_price = 0
+        multiple = False  # 연속 요청 비활성화
         self.openapi.set_trade_data_handler(_on_receive_tr_data)
 
         # when
         request_opt = Opt10079(self.qtapp, self.openapi)
-        response: Opt10079Response = await request_opt.request(code, last_dt, adj_stock_price)
+        response: Opt10079Response = await request_opt.request(
+            code, last_dt, adj_stock_price, multiple)
 
         # then
         self.assertEqual(code, response.code)
-        self.assertGreater(len(response.tick_data), 0)
+        self.assertEqual(900, len(response.tick_data))
 
         self.openapi.reset_trade_data_handler()
 
