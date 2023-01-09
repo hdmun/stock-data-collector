@@ -7,6 +7,7 @@ import zmq.asyncio
 
 from jobs.kiwoom_openapi import KiwoomOpenAPIJob
 from model.config import JobConfig
+from repository import StockItemRepository
 
 
 def load_job_config(filename: str) -> JobConfig:
@@ -25,7 +26,10 @@ async def main():
         raise ex
 
     zmqctx = zmq.asyncio.Context()
-    job = KiwoomOpenAPIJob(zmqctx)
+    job = KiwoomOpenAPIJob(
+        zmqctx=zmqctx,
+        stock_item_repository=StockItemRepository(filename='stock_items.json')
+    )
 
     host, port = job_config.kiwoom_addr
     job.connect(host, port)
@@ -36,6 +40,7 @@ if __name__ == '__main__':
     try:
         print('running job scheduler')
 
+        # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         asyncio.run(main())
     except Exception as ex:
         print(ex)
