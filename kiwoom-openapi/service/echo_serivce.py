@@ -2,10 +2,10 @@
 # -*-coding: utf-8 -*-
 
 import asyncio
+from datetime import datetime
 
 import zmq
 import zmq.asyncio
-from PyQt5.QtWidgets import QApplication
 
 import protocol
 from openapi import KiwoomOpenAPI, ResponseError
@@ -82,15 +82,29 @@ class EchoService(object):
             kospi=kospi, kosdaq=kosdaq, futures=futures))
 
     @echo.route('/tick/market')
-    def on_get_tick_market(self, request: protocol.TickMarketRequest):
-        # request openapi
-        # push
-        # reply
-        pass
+    async def on_get_tick_market(self, request: protocol.TickMarketRequest):
+        if not self._openapi_client.connected:
+            self.reply(error_code=1, message='not connected openapi')
+            return
+
+        response = await self._openapi_client.request_tick_market(
+            request.code, last_date=request.last_date)
+
+        # todo: push to tick data
+        print(f'`/tick/market`. code: {response.code}, count: {len(response.tick_data)}')
+
+        self.reply(error_code=0, message='succes')
 
     @echo.route('/investors')
-    def on_get_investors(self, request: protocol.InvestorsRequest):
-        # request openapi
-        # push
-        # reply
-        pass
+    async def on_get_investors(self, request: protocol.InvestorsRequest):
+        if not self._openapi_client.connected:
+            self.reply(error_code=1, message='not connected openapi')
+            return
+
+        response = await self._openapi_client.request_investors(
+            request.code, first_date=datetime.now(), last_date=request.last_date)
+
+        # todo: push to tick data
+        print(f'`/investors`. code: {response.code}, count: {len(response.data)}')
+
+        self.reply(error_code=0, message='succes')

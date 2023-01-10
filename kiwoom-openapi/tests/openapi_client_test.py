@@ -42,7 +42,9 @@ class KiwoomOpenAPIClientTests(unittest.IsolatedAsyncioTestCase):
     def test_get_stocks(self):
         # given
         api_mock = KiwoomOpenAPIMock()
-        client = KiwoomOpenAPIClient(api=api_mock)
+        client = KiwoomOpenAPIClient(qtapp=None)
+        # client.connect(api=api_mock)
+        client._api = api_mock
 
         # when
         kospi = client.get_stock_items_by_kospi()
