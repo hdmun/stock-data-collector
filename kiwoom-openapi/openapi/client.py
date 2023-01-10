@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 
 from model import StockItem
 from openapi import KiwoomOpenAPI, Market, ResponseError
-from openapi.request import Opt10079
+from openapi.request import Opt10059, Opt10079
 from openapi.request.tran import TransactionRequest
 
 
@@ -101,5 +101,16 @@ class KiwoomOpenAPIClient(object):
 
         self._request = Opt10079(qtapp=self._qtapp, api=self._api)
         response = await self._request.request(code, last_date)
+        self._request = None
+        return response
+
+    async def request_investors(self, code: str, first_date: datetime,
+                                last_date: datetime):
+        if self._request is not None:
+            # duplicate request
+            return
+
+        self._request = Opt10059(qtapp=self._qtapp, api=self._api)
+        response = await self._request.request(code, first_date, last_date)
         self._request = None
         return response

@@ -2,10 +2,10 @@
 # -*-coding: utf-8 -*-
 
 import asyncio
+from datetime import datetime
 
 import zmq
 import zmq.asyncio
-from PyQt5.QtWidgets import QApplication
 
 import protocol
 from openapi import KiwoomOpenAPI, ResponseError
@@ -96,8 +96,15 @@ class EchoService(object):
         self.reply(error_code=0, message='succes')
 
     @echo.route('/investors')
-    def on_get_investors(self, request: protocol.InvestorsRequest):
-        # request openapi
-        # push
-        # reply
-        pass
+    async def on_get_investors(self, request: protocol.InvestorsRequest):
+        if not self._openapi_client.connected:
+            self.reply(error_code=1, message='not connected openapi')
+            return
+
+        response = await self._openapi_client.request_investors(
+            request.code, first_date=datetime.now(), last_date=request.last_date)
+
+        # todo: push to tick data
+        print(f'`/investors`. code: {response.code}, count: {len(response.data)}')
+
+        self.reply(error_code=0, message='succes')

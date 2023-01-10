@@ -46,20 +46,19 @@ class Opt10059(TransactionRequest):
                          api=api, qtapp=qtapp)
 
         self._req_code = ''
-        self._req_last_dt = None
+        self._req_last_date = None
         self._investor_data = list[InvestorData]()
 
-    async def request(self, code: str, last_dt: datetime=None) -> Opt10059Response:
+    async def request(self, code: str, first_date: datetime,
+                      last_date: datetime=None, multiple=True) -> Opt10059Response:
         """특정 종목의 투자자, 기관들의 거래 정보를 조회합니다."""
 
         self._req_code = code
-        self._req_last_dt = last_dt
-
-        now_dt = datetime.now().strftime('%Y%m%d')
+        self._req_last_date = last_date
 
         def __set_request_params():
             """요청 전에 필요한 paramter 값을 세팅한다."""
-            self._api.set_input_value('일자', now_dt)
+            self._api.set_input_value('일자', first_date.strftime('%Y%m%d'))
             self._api.set_input_value('종목코드', code)
             self._api.set_input_value('금액수량구분', '2')  # 1:금액, 2:수량
             self._api.set_input_value('매매구분', '0')  # 0:순매수, 1:매수, 2:매도
@@ -68,14 +67,14 @@ class Opt10059(TransactionRequest):
         __set_request_params()
         await self._request_data(0, '0101')
 
-        while self._continue_next:
+        while multiple and self._continue_next:
             __set_request_params()
             await self._request_data(2, '0101')
 
         return Opt10059Response(code=code, data=self._investor_data)
 
     def on_receive_tr_data(self):
-        last_dt = self._req_last_dt
+        last_dt = self._req_last_date
 
         count = self._api.get_receive_count(self.tran_code, self.req_name)
         for i in range(count):
