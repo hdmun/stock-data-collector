@@ -15,7 +15,7 @@ from router import Router
 
 echo = Router()
 
-class EchoService(object):
+class EchoController(object):
     """zmq.REP를 사용해 메세지를 받아 메세지를 처리 후 응답"""
 
     def __init__(self, zmqctx: zmq.asyncio.Context, port: int,
