@@ -4,12 +4,12 @@
 import zmq.asyncio
 from model.stockitem import StockItem
 
-from protocol.request import RequestMessage
+from protocol.request import RequestMessage, TickMarketRequest, InvestorsRequest
 from protocol.response import (
     ResponseMessage,
     GetStocksResponse
 )
-from repository import StockItemRepository
+from repository import RequestRepository, StockItemRepository
 
 
 class KiwoomOpenAPIJob(object):
@@ -19,8 +19,10 @@ class KiwoomOpenAPIJob(object):
     """
 
     def __init__(self, zmqctx: zmq.asyncio.Context,
+                 request_repository: RequestRepository,
                  stock_item_repository: StockItemRepository):
         self._req_sock: zmq.asyncio.Socket = zmqctx.socket(zmq.REQ)
+        self._request_repository = request_repository
         self._stock_item_repository = stock_item_repository
 
     def connect(self, host: str, port: int):
@@ -30,11 +32,12 @@ class KiwoomOpenAPIJob(object):
         self._req_sock.send_pyobj(RequestMessage(path=path))
         return await self._req_sock.recv_pyobj()
 
-    async def request_message(self, message: RequestMessage):
+    async def request_message(self, message: RequestMessage) -> ResponseMessage:
         self._req_sock.send_pyobj(message)
         return await self._req_sock.recv_pyobj()
 
-    async def run(self):
+    async def setup(self):
+        self._request_repository.load()
         self._stock_item_repository.load()
 
         # check maintenence
@@ -57,6 +60,51 @@ class KiwoomOpenAPIJob(object):
 
         self._update_stock_items(stock_items.futures, stock_items.kosdaq,
                                  stock_items.kospi)
+
+        # 요청 데이터 큐가 비어있으면 채워주자
+        if self._request_repository.empty:
+            # todo: meger list kospi, kosdaq
+
+            for stock in stock_items.kospi:
+                self._request_repository.push(InvestorsRequest(
+                    path='/investors',
+                    code=stock.code,
+                    last_date=None
+                ))
+                self._request_repository.push(TickMarketRequest(
+                    path='/tick/market',
+                    code=stock.code,
+                    last_date=None
+                ))
+            for stock in stock_items.kosdaq:
+                self._request_repository.push(InvestorsRequest(
+                    path='/investors',
+                    code=stock.code,
+                    last_date=None
+                ))
+                self._request_repository.push(TickMarketRequest(
+                    path='/tick/market',
+                    code=stock.code,
+                    last_date=None
+                ))
+            # todo: future tick request
+
+    async def run(self):
+        while not self._request_repository.empty:
+            # todo: check maintenence
+
+            message = self._request_repository.message
+            if message is None:
+                message = self._request_repository.pop()
+
+            response = await self.request_message(message)
+            print(f'response error code: {response.error_code}, '
+                  f'{response.message}')
+
+            if response.error_code:
+                break
+
+            message = self._request_repository.pop()
 
     def _update_stock_items(self, future: list[StockItem],
                             kosdaq: list[StockItem], kospi: list[StockItem]):

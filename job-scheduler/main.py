@@ -7,7 +7,7 @@ import zmq.asyncio
 
 from jobs.kiwoom_openapi import KiwoomOpenAPIJob
 from model.config import JobConfig
-from repository import StockItemRepository
+from repository import RequestRepository, StockItemRepository
 
 
 def load_job_config(filename: str) -> JobConfig:
@@ -28,11 +28,13 @@ async def main():
     zmqctx = zmq.asyncio.Context()
     job = KiwoomOpenAPIJob(
         zmqctx=zmqctx,
+        request_repository=RequestRepository(filename='request.json'),
         stock_item_repository=StockItemRepository(filename='stock_items.json')
     )
 
     host, port = job_config.kiwoom_addr
     job.connect(host, port)
+    await job.setup()
     await job.run()
 
 
