@@ -1,2 +1,2 @@
-from repository.cache_repository import CacheRepository
+from repository.request_repository import RequestRepository
 from repository.stockitem_repository import StockItemRepository
