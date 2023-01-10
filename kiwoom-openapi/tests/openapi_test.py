@@ -85,14 +85,13 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
         request_opt = Opt10079(self.qtapp, self.openapi)
         response: Opt10079Response = await request_opt.request(
             code, last_dt, adj_stock_price, multiple)
+        self.openapi.reset_trade_data_handler()
 
         # then
         self.assertEqual(code, response.code)
         self.assertEqual(900, len(response.tick_data))
 
-        self.openapi.reset_trade_data_handler()
 
-    @unittest.skip('연속으로 요청하지 않게 처리할 때 까지 스킵')
     async def test_request_investor(self):
         def _on_receive_tr_data(screen_no: str, req_name: str, tran_code: str,
                                 record_name: str, prev_next: str,
@@ -111,15 +110,21 @@ class KiwoomOpenAPITests(unittest.IsolatedAsyncioTestCase):
 
         # given
         code = '005930'
-        last_dt = datetime.now() + timedelta(days=-7)
+        last_date = None
+        multiple = False  # 연속 요청 비활성화
         self.openapi.set_trade_data_handler(_on_receive_tr_data)
 
         # when
         request_opt = Opt10059(self.qtapp, self.openapi)
-        response: Opt10059Response = await request_opt.request(code, last_dt)
+        response: Opt10059Response = await request_opt.request(
+            code=code,
+            first_date=datetime.now(),
+            last_date=last_date,
+            multiple=multiple
+        )
+        self.openapi.reset_trade_data_handler()
 
         # then
         self.assertEqual(code, response.code)
-        self.assertGreater(len(response.data), 0)
+        self.assertEqual(100, len(response.data))
 
-        self.openapi.reset_trade_data_handler()
