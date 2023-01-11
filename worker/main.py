@@ -3,6 +3,7 @@ import json
 
 import zmq
 import zmq.asyncio
+from controller.pull_controller import PullController
 
 from model.config import WorkerConfig
 
@@ -23,16 +24,12 @@ async def main():
         raise ex
 
     zmqctx = zmq.asyncio.Context()
-    pull_sock = zmqctx.socket(zmq.PULL)
+    pull_controller = PullController(zmqctx)
 
     host, port = worker_config.kiwoom_addr
-    pull_sock.connect(host, port)
+    pull_controller.connect(host, port)
 
-    while True:
-        _ = await pull_sock.recv_pyobj()
-
-        # trasform
-        # send data to sinker
+    await pull_controller.recv_message()
 
 
 if __name__ == '__main__':
