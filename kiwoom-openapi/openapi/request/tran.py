@@ -102,3 +102,6 @@ class TransactionRequest(object):
                   f'{self.req_name}, {self.tran_code}, {field_name}, {data}')
 
         return data
+
+    def _get_request_data_ex(self) -> list[list[str]]:
+        return self._api.get_request_data_ex(self.tran_code, '')

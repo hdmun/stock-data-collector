@@ -94,7 +94,7 @@ class KiwoomOpenAPIClient(object):
             finally:
                 self._request._exit()
 
-    async def request_tick_market(self, code: str, last_date: datetime):
+    async def request_tick_market(self, code: str, last_date: datetime) -> list[list[str]]:
         if self._request is not None:
             # duplicate request
             return
@@ -105,7 +105,7 @@ class KiwoomOpenAPIClient(object):
         return response
 
     async def request_investors(self, code: str, first_date: datetime,
-                                last_date: datetime):
+                                last_date: datetime) -> list[list[str]]:
         if self._request is not None:
             # duplicate request
             return

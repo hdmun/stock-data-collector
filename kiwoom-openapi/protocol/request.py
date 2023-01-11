@@ -25,3 +25,10 @@ class TickMarketRequest(RequestMessage):
 class InvestorsRequest(RequestMessage):
     code: str
     last_date: datetime
+
+
+@dataclass(frozen=True)
+class PushMessage(RequestMessage):
+    path: str
+    code: str
+    datas: list[list[str]]

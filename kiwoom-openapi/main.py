@@ -7,15 +7,24 @@ from PyQt5.QtWidgets import QApplication
 
 from openapi.client import KiwoomOpenAPIClient
 from controller.echo_controller import EchoController
+from service.push_service import PushService
 
 
 async def main():
     zmqctx = zmq.asyncio.Context()
     openapi_client = KiwoomOpenAPIClient(qtapp=QApplication([]))
+    push_service = PushService(zmqctx)
     echo_controller = EchoController(
-        zmqctx, port=7070, openapi_client=openapi_client)
+        zmqctx=zmqctx,
+        push_service=push_service,
+        openapi_client=openapi_client
+    )
 
-    await echo_controller.recv_message()
+    echo_controller.bind(host='tcp://127.0.0.1', echo_port=7070, push_port=7071)
+    await asyncio.gather(
+        echo_controller.listen(),
+        push_service.start()
+    )
 
 
 if __name__ == '__main__':
