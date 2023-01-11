@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 
 import zmq
 import zmq.asyncio
@@ -18,7 +19,7 @@ def load_job_config(filename: str) -> WorkerConfig:
 
 async def main():
     try:
-        worker_config = load_job_config(filename='worker_config.json')
+        worker_config = load_job_config(filename=os.environ['CONFIG_FILENAME'])
     except FileNotFoundError as ex:
         print('setup to config file')
         raise ex
