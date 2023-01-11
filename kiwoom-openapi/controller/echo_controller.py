@@ -11,20 +11,27 @@ import protocol
 from openapi import KiwoomOpenAPI, ResponseError
 from openapi.client import KiwoomOpenAPIClient
 from router import Router
+from service.push_service import PushService
 
 
 echo = Router()
 
-class EchoService(object):
+class EchoController(object):
     """zmq.REP를 사용해 메세지를 받아 메세지를 처리 후 응답"""
 
-    def __init__(self, zmqctx: zmq.asyncio.Context, port: int,
+    def __init__(self,
+                 zmqctx: zmq.asyncio.Context,
+                 push_service: PushService,
                  openapi_client: KiwoomOpenAPIClient):
         self._rep_sock = zmqctx.socket(zmq.REP)
-        self._rep_sock.bind(f'tcp://172.30.1.50:{port}')
+        self._push_service = push_service
         self._openapi_client = openapi_client
 
-    async def recv_message(self):
+    def bind(self, host: str, echo_port: int, push_port: int):
+        self._rep_sock.bind(f'{host}:{echo_port}')
+        self._push_service.bind(f'{host}:{push_port}')
+
+    async def listen(self):
         while True:
             try:
                 message: protocol.RequestMessage = await self._rep_sock.recv_pyobj()
@@ -87,11 +94,12 @@ class EchoService(object):
             self.reply(error_code=1, message='not connected openapi')
             return
 
-        response = await self._openapi_client.request_tick_market(
+        result = await self._openapi_client.request_tick_market(
             request.code, last_date=request.last_date)
 
-        # todo: push to tick data
-        print(f'`/tick/market`. code: {response.code}, count: {len(response.tick_data)}')
+        self._push_service.push('/tick/market', request.code, result)
+
+        print(f'`/tick/market`. code: {request.code}, count: {len(result)}')
 
         self.reply(error_code=0, message='succes')
 
@@ -101,10 +109,11 @@ class EchoService(object):
             self.reply(error_code=1, message='not connected openapi')
             return
 
-        response = await self._openapi_client.request_investors(
+        result = await self._openapi_client.request_investors(
             request.code, first_date=datetime.now(), last_date=request.last_date)
 
-        # todo: push to tick data
-        print(f'`/investors`. code: {response.code}, count: {len(response.data)}')
+        self._push_service.push('/investors', request.code, result)
+
+        print(f'`/investors`. code: {request.code}, count: {len(result)}')
 
         self.reply(error_code=0, message='succes')

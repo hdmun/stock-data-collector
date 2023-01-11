@@ -202,3 +202,10 @@ class KiwoomOpenAPI(QAxWidget):
 
         ret: str = self.GetCommData(tr_code, record_name, index, item_name)
         return ret.strip()
+
+    def get_request_data_ex(self, tr_code: str, record_name: str) -> list[list[str]]:
+        """OnReceiveTRData() 이벤트가 발생될때 수신한 데이터를 얻어오는 함수.
+
+        수신된 데이터를 전체 다 가져온다.
+        """
+        return self.GetCommDataEx(tr_code, record_name)
