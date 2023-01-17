@@ -1,5 +1,7 @@
 # stock-data-collector
 
+> 과거 private repo 에서 작업했던 프로젝트를 오픈소스로 공개하기 위해 리팩토링 작업 중입니다.
+
 키움 증권 OpenAPI+를 사용한 틱 데이터 수집 모듈
 
 ## Setup
